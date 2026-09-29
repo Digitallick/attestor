@@ -79,7 +79,7 @@ attestor splits the answer into sentences and reads the citation markers on each
 - `<= reject_threshold` (0.3): unsupported
 - in between: uncertain, reported as a warning
 
-Figures get stricter treatment. If a sentence contains a number that doesn't appear in any cited source, it fails however close the wording is. An invented figure is the error that does the most damage in a memo.
+Figures get stricter treatment. Every figure in a sentence has to appear in a cited source, compared with its unit and scale (`$4.2 million`, `12%`, `4.0x`, `35 bps`) and period labels like `FY2025` or `Q3`. `$4.2 million` matches `4,200,000`, but `$500 billion` does not match `$500 million`, and `FY2025` does not match `FY2024`. A sentence with a missing figure fails however close the wording is. An invented figure is the error that does the most damage in a memo.
 
 Paraphrase is where lexical scoring runs out, so there is an optional LLM judge for the uncertain band only:
 
@@ -88,7 +88,7 @@ pip install -e ".[judge]"
 attestor check examples/cases/borderline.json --judge claude
 ```
 
-Claims the deterministic pass already decided never reach the judge, and every judge call is recorded in the report and the audit log.
+Claims the deterministic pass already decided never reach the judge. Every judge call, including failed ones, is listed in the report, and the audit log records how many were made. A failed call is reported as a warning, never as a pass. The judge uses your `ANTHROPIC_API_KEY`.
 
 ## From Python or pytest
 
@@ -116,6 +116,7 @@ def test_memo_output():
 ## Limitations
 
 - Grounding is lexical. It misses some valid paraphrases (that's what the judge is for) and can be fooled by a sentence that reuses source words to say something else.
+- The figure check compares sets, not positions. A sentence that swaps two figures that both appear in the source will pass.
 - English only for now.
 - The regulatory references show where a check is relevant. They are not legal advice and don't make a system compliant on their own.
 

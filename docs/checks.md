@@ -10,14 +10,14 @@ For each sentence with at least one valid citation, attestor scores it against e
 - 3-gram overlap on content words
 - longest shared character span, as a share of the sentence length
 
-Before scoring, any figure in the sentence must appear in at least one cited source. Figures are compared after removing thousands separators and trailing zeros, so `$1,200.50` matches `1200.5`. Labels like `FY2025` and `Q3` are not treated as figures.
+Before scoring, every figure in the sentence must appear in at least one cited source. Figures are normalised to a value and a unit: currency, `%` (also "percent"), `x` multiples and `bps`, with scale words applied (`$4.2 million` is 4,200,000). A bare number in the source can support a currency amount in the sentence. Period labels (`FY2025`, `CY24`, `Q3`, `H1 2025`) are compared as labels, and a source that says `FY2024` also supports a sentence that says `2024`. Ordinals like `3rd` are ignored.
 
 | Option | Default | Meaning |
 |---|---|---|
 | `support_threshold` | 0.6 | At or above: supported |
 | `reject_threshold` | 0.3 | At or below: unsupported |
 
-Scores in between are uncertain. Without a judge they are reported as warnings. With `--judge claude` (or `judge.provider: anthropic` in the policy) the judge decides, and a judge failure is reported as a warning rather than a pass.
+Scores in between are uncertain. Without a judge they are reported as warnings. With `--judge claude` (or `judge.provider: anthropic` in the policy) the judge decides, and a judge failure is reported as a warning rather than a pass. Failed calls are listed in the report's `judge_calls` with the error.
 
 ## citation_coverage
 
@@ -42,7 +42,7 @@ Regex detectors, with validation where a checksum exists:
 | `iban` | Must pass the mod-97 check |
 | `us_bank_account` | Only when preceded by "account", "acct", "routing" or "ABA" |
 | `email` | |
-| `phone` | North American formats |
+| `phone` | North American formats with `-`, `.` or `(area code)` separators |
 
 Choose detectors with `detectors: [ssn, email]`. Values are masked in findings, so reports and logs never contain the raw data.
 
@@ -52,7 +52,7 @@ Choose detectors with `detectors: [ssn, email]`. Values are masked in findings, 
 
 ## prohibited_language
 
-`terms` and `extra_terms` are regexes matched on word boundaries. A match is skipped when a negation (no, not, never, cannot, without, and similar) appears shortly before it in the same sentence, so "no investment is risk-free" is not flagged.
+`terms` and `extra_terms` are regexes matched on word boundaries. A match is skipped only when a negation (no, not, never, cannot, without, and similar) is within the three words before it and in the same clause. "No investment is risk-free" is not flagged. "No fees and guaranteed returns" is.
 
 ## Audit log
 
