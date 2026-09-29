@@ -1,0 +1,11 @@
+# Start from the finance pack and tighten a few rules.
+pack: finance
+
+checks:
+  citation_grounding:
+    support_threshold: 0.65
+  prohibited_language:
+    extra_terms: ["no-brainer", "can't miss"]
+
+audit:
+  path: .attestor/audit.jsonl

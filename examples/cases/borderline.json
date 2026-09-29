@@ -1,0 +1,12 @@
+{
+  "id": "northwind-footprint-paraphrase",
+  "answer": "Northwind Logistics runs 38 warehouse sites throughout North America [S1]. This summary is not investment advice. Past performance is not indicative of future results.",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northwind Logistics 10-K excerpt",
+      "text": "Northwind Logistics operates 38 distribution centers across North America."
+    }
+  ],
+  "metadata": { "model": "example", "prompt_id": "ic-memo-summary-v2" }
+}

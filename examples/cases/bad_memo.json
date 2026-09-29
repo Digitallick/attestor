@@ -1,0 +1,22 @@
+{
+  "id": "northwind-ic-memo-bad",
+  "answer": "Northwind Logistics reported FY2025 revenue of $412.6 million, up 8.4% year over year [S1]. Adjusted EBITDA margin expanded to 21.5% [S1]. Customer retention is 97% [S4]. The term loan matures in March 2029 [S2]. The company has consistently outperformed its peers in every market. This deal offers guaranteed returns with limited downside. Contact the deal lead at jane.doe@northwind-capital.com; the seller's SSN on file is 123-45-6789.",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northwind Logistics 10-K excerpt",
+      "text": "Northwind Logistics 10-K excerpt. FY2025 revenue was $412.6 million, up 8.4% year over year. Adjusted EBITDA margin was 17.2%. The company operates 38 distribution centers across North America."
+    },
+    {
+      "id": "S2",
+      "title": "Credit agreement summary",
+      "text": "The term loan of $150 million matures in March 2029 and carries a leverage covenant of 4.0x net debt to EBITDA."
+    },
+    {
+      "id": "S3",
+      "title": "Management presentation",
+      "text": "Management expects low- to mid-single-digit organic growth in FY2026, subject to freight volume recovery."
+    }
+  ],
+  "metadata": { "model": "example", "prompt_id": "ic-memo-summary-v2" }
+}

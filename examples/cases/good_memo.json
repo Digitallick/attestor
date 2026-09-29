@@ -1,0 +1,22 @@
+{
+  "id": "northwind-ic-memo-good",
+  "answer": "Northwind Logistics reported FY2025 revenue of $412.6 million, up 8.4% year over year [S1]. Adjusted EBITDA margin was 17.2% [S1]. The company operates 38 distribution centers across North America [S1]. Its $150 million term loan matures in March 2029, with a 4.0x leverage covenant [S2]. Management expects low- to mid-single-digit organic growth in FY2026, subject to freight volume recovery [S3].\n\nThis summary is not investment advice. Past performance is not indicative of future results.",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Northwind Logistics 10-K excerpt",
+      "text": "Northwind Logistics 10-K excerpt. FY2025 revenue was $412.6 million, up 8.4% year over year. Adjusted EBITDA margin was 17.2%. The company operates 38 distribution centers across North America."
+    },
+    {
+      "id": "S2",
+      "title": "Credit agreement summary",
+      "text": "The term loan of $150 million matures in March 2029 and carries a leverage covenant of 4.0x net debt to EBITDA."
+    },
+    {
+      "id": "S3",
+      "title": "Management presentation",
+      "text": "Management expects low- to mid-single-digit organic growth in FY2026, subject to freight volume recovery."
+    }
+  ],
+  "metadata": { "model": "example", "prompt_id": "ic-memo-summary-v2" }
+}
