@@ -16,7 +16,8 @@ def in_tmp(tmp_path, monkeypatch):
 
 
 def run(*args):
-    return runner.invoke(app, [str(a) for a in args])
+    # A narrow terminal, so long lines would wrap if the CLI let them.
+    return runner.invoke(app, [str(a) for a in args], env={"COLUMNS": "60"})
 
 
 def test_bad_memo_exits_1_and_writes_audit(in_tmp):

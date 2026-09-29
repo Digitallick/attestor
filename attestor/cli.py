@@ -31,7 +31,7 @@ _VERDICT_RANK = {Verdict.PASS: 0, Verdict.WARN: 1, Verdict.BLOCK: 2}
 
 
 def _fail(message: str) -> NoReturn:
-    err_console.print(f"[red]error:[/red] {message}", highlight=False)
+    err_console.print(f"[red]error:[/red] {message}", highlight=False, soft_wrap=True)
     raise typer.Exit(3)
 
 
@@ -104,7 +104,11 @@ def list_checks(
         pol = policy_from_dict({"pack": pack})
     except AttestorError as exc:
         _fail(str(exc))
-    table = Table("Check", "What it looks for", "Level", "Rules", title=f"{pack} pack")
+    table = Table(title=f"{pack} pack")
+    table.add_column("Check", no_wrap=True, min_width=max(map(len, all_checks())))
+    table.add_column("What it looks for")
+    table.add_column("Level")
+    table.add_column("Rules")
     for check_id, check_cls in all_checks().items():
         cfg = pol.config_for(check_id)
         level = (cfg.severity or check_cls.default_severity).value if cfg.enabled else "off"
