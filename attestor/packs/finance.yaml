@@ -1,0 +1,53 @@
+version: 1
+pack: finance
+description: US financial services communications (FINRA, SEC) with PII controls.
+
+checks:
+  citation_grounding:
+    severity: block
+    support_threshold: 0.6
+    reject_threshold: 0.3
+    regulatory_refs: ["FINRA Rule 2210(d)(1)(A)", "SEC Rule 206(4)-1(a)(2)"]
+
+  citation_coverage:
+    severity: warn
+    min_coverage: 1.0
+    regulatory_refs: ["FINRA Rule 2210(d)(1)(A)", "SEC Rule 206(4)-1(a)(2)"]
+
+  phantom_citation:
+    severity: block
+    regulatory_refs: ["FINRA Rule 2210(d)(1)(A)"]
+
+  pii_leak:
+    severity: block
+    detectors: [ssn, credit_card, iban, us_bank_account, email, phone]
+    regulatory_refs: ["SEC Regulation S-P", "GDPR Art. 5(1)(c)"]
+
+  required_disclosures:
+    severity: warn
+    phrases:
+      - label: Not investment advice
+        pattern: "not (?:intended as |to be construed as )?(?:investment|financial) advice"
+      - label: Past performance disclaimer
+        pattern: "past performance (?:is not|is no|does not|doesn't)"
+    regulatory_refs: ["FINRA Rule 2210(d)(1)(A)", "FINRA Rule 2210(d)(1)(D)"]
+
+  prohibited_language:
+    severity: block
+    terms:
+      - "guaranteed (?:returns?|profits?|income|gains?)"
+      - "risk[- ]free"
+      - "can(?:'|no)t lose"
+      - "no risk"
+      - "assured (?:returns?|profits?)"
+      - "sure thing"
+      - "double your money"
+    extra_terms: []
+    regulatory_refs: ["FINRA Rule 2210(d)(1)(B)", "FINRA Rule 2210(d)(1)(F)"]
+
+judge:
+  provider: none
+
+audit:
+  enabled: true
+  path: .attestor/audit.jsonl

@@ -1,0 +1,40 @@
+version: 1
+pack: general
+description: Industry-neutral defaults for any product that answers from sources.
+
+checks:
+  citation_grounding:
+    severity: block
+    support_threshold: 0.6
+    reject_threshold: 0.3
+    regulatory_refs: ["NIST AI RMF: Valid and Reliable", "EU AI Act Art. 15"]
+
+  citation_coverage:
+    severity: warn
+    min_coverage: 1.0
+    regulatory_refs: ["NIST AI RMF: Accountable and Transparent"]
+
+  phantom_citation:
+    severity: block
+    regulatory_refs: ["NIST AI RMF: Valid and Reliable"]
+
+  pii_leak:
+    severity: block
+    detectors: [ssn, credit_card, iban, email, phone]
+    regulatory_refs: ["GDPR Art. 5(1)(c)"]
+
+  required_disclosures:
+    enabled: false
+    phrases: []
+
+  prohibited_language:
+    enabled: false
+    terms: []
+    extra_terms: []
+
+judge:
+  provider: none
+
+audit:
+  enabled: true
+  path: .attestor/audit.jsonl
