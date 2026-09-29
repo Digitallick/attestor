@@ -3,19 +3,27 @@ import pytest
 from attestor.text import (
     best_sentence,
     content_tokens,
+    figures,
     longest_match_ratio,
     ngram_overlap,
-    numbers,
+    source_figures,
     token_recall,
 )
 
 
-def test_numbers_are_canonicalised():
-    assert numbers("Revenue of $1,200.50 and 4.0x leverage") == {"1200.5", "4"}
+def test_figures_carry_unit_and_scale():
+    found = figures("Revenue of $1,200.50, $4.2 million, 12%, 4.0x and 35 bps")
+    assert list(found.values()) == ["$1200.50", "$4.2 million", "12%", "4.0x", "35 bps"]
+    assert ("$", 4_200_000.0) in found
 
 
-def test_numbers_skip_labels_like_fiscal_years():
-    assert numbers("FY2025 and Q3 results, per the 10-K") == {"10"}
+def test_period_labels_are_figures_and_ordinals_are_not():
+    found = figures("FY2025 and Q3 results, per the 10-K, ranked 3rd")
+    assert list(found.values()) == ["FY2025", "Q3", "10"]
+
+
+def test_source_periods_imply_their_year():
+    assert ("", 2024.0) in source_figures("Revenue peaked in FY2024.")
 
 
 def test_content_tokens_drop_stopwords():

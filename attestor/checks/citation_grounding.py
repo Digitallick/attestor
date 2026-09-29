@@ -3,7 +3,15 @@ from __future__ import annotations
 from attestor.checks.base import BaseCheck, CheckContext, cap, register
 from attestor.errors import JudgeError, PolicyError
 from attestor.models import Claim, Finding, Severity, Source
-from attestor.text import best_sentence, longest_match_ratio, ngram_overlap, numbers, token_recall
+from attestor.text import (
+    best_sentence,
+    figure_supported,
+    figures,
+    longest_match_ratio,
+    ngram_overlap,
+    source_figures,
+    token_recall,
+)
 
 
 def support_score(claim: str, source: str) -> float:
@@ -21,9 +29,9 @@ class CitationGrounding(BaseCheck):
     default_severity = Severity.BLOCK
 
     def run(self, ctx: CheckContext) -> list[Finding]:
-        support = float(ctx.options.get("support_threshold", 0.6))
-        reject = float(ctx.options.get("reject_threshold", 0.3))
-        if not 0 <= reject <= support <= 1:
+        support = ctx.number("support_threshold", 0.6)
+        reject = ctx.number("reject_threshold", 0.3)
+        if reject > support:
             raise PolicyError(
                 "citation_grounding needs 0 <= reject_threshold <= support_threshold <= 1"
             )
@@ -41,8 +49,9 @@ class CitationGrounding(BaseCheck):
                 "source_id": best.id,
                 "closest_passage": best_sentence(claim.text, best.text),
             }
-            cited_figures = set().union(*(numbers(s.text) for s in sources))
-            missing = sorted(numbers(claim.text) - cited_figures)
+            pool = set().union(*(source_figures(s.text) for s in sources))
+            missing = [text for key, text in figures(claim.text).items()
+                       if not figure_supported(key, pool)]
 
             if missing:
                 findings.append(ctx.finding(
@@ -71,6 +80,8 @@ class CitationGrounding(BaseCheck):
         try:
             verdict = ctx.judge.assess(claim.text, sources)
         except JudgeError as exc:
+            ctx.judge_calls.append({"claim_index": claim.index, "judge": ctx.judge.name,
+                                    "supported": None, "error": str(exc)})
             return [ctx.finding(
                 f"Support is uncertain and the judge was unavailable: {exc}",
                 claim_index=claim.index, severity=soft, evidence=evidence,

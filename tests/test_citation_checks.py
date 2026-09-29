@@ -49,7 +49,7 @@ def test_invented_figure_is_blocked():
     findings = run_check("citation_grounding", case)
     assert len(findings) == 1
     assert findings[0].severity is Severity.BLOCK
-    assert findings[0].evidence["missing_figures"] == ["21.5"]
+    assert findings[0].evidence["missing_figures"] == ["21.5%"]
 
 
 def test_unrelated_statement_is_blocked():
@@ -82,11 +82,13 @@ def test_judge_rejection_blocks():
 
 
 def test_judge_failure_warns_instead_of_passing():
-    judge = FakeJudge(error=JudgeError("no credentials"))
+    judge, calls = FakeJudge(error=JudgeError("no credentials")), []
     findings = run_check("citation_grounding", make_case(PARAPHRASE, {"S1": FOOTPRINT}),
-                         judge=judge)
+                         judge=judge, judge_calls=calls)
     assert findings[0].severity is Severity.WARN
     assert "no credentials" in findings[0].message
+    assert calls == [{"claim_index": 1, "judge": "fake", "supported": None,
+                      "error": "no credentials"}]
 
 
 def test_confident_statements_never_reach_the_judge():
@@ -100,3 +102,39 @@ def test_bad_thresholds_rejected():
     with pytest.raises(PolicyError):
         run_check("citation_grounding", make_case("x [S1].", {"S1": "x"}),
                   options={"support_threshold": 0.5, "reject_threshold": 0.7})
+
+
+@pytest.mark.parametrize("claim,source", [
+    ("FY2025 revenue was $500 million [S1].", "FY2024 revenue was $500 million."),
+    ("Q4 revenue was $500 million [S1].", "Q3 revenue was $500 million."),
+    ("Revenue was $500 billion [S1].", "Revenue was $500 million."),
+    ("Revenue grew 12% [S1].", "Revenue grew $12 million."),
+])
+def test_wrong_unit_scale_or_period_is_blocked(claim, source):
+    findings = run_check("citation_grounding", make_case(claim, {"S1": source}))
+    assert len(findings) == 1
+    assert findings[0].evidence["missing_figures"]
+
+
+@pytest.mark.parametrize("claim,source", [
+    ("Revenue was $4.2 million [S1].", "Revenue was $4,200,000."),
+    ("Revenue was $4,200,000 [S1].", "Revenue was $4.2 million."),
+    ("Revenue peaked in 2024 [S1].", "Revenue peaked in FY2024."),
+    ("It ranked 3rd in the region [S1].", "It ranked third in the region."),
+    ("Revenue rose 12 percent [S1].", "Revenue rose 12%."),
+])
+def test_equivalent_figures_are_not_flagged(claim, source):
+    findings = run_check("citation_grounding", make_case(claim, {"S1": source}))
+    assert not any("missing_figures" in f.evidence for f in findings)
+
+
+@pytest.mark.parametrize("check_id,options", [
+    ("citation_grounding", {"support_threshold": "high"}),
+    ("citation_grounding", {"reject_threshold": True}),
+    ("citation_coverage", {"min_coverage": "abc"}),
+    ("citation_coverage", {"min_coverage": 2}),
+])
+def test_bad_option_types_are_policy_errors(check_id, options):
+    with pytest.raises(PolicyError):
+        run_check(check_id, make_case("Revenue grew 8% [S1].", {"S1": "Revenue grew 8%."}),
+                  options=options)
