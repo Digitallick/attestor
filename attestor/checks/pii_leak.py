@@ -42,11 +42,45 @@ DETECTORS = {
 }
 
 
+LABELS = {
+    "ssn": "SSN",
+    "credit_card": "card number",
+    "iban": "IBAN",
+    "us_bank_account": "bank account number",
+    "email": "email address",
+    "phone": "phone number",
+}
+
+
 def mask(detector: str, value: str) -> str:
     if detector == "email":
         local, _, domain = value.partition("@")
         return f"{local[:1]}***@{domain}"
     return "*" * max(len(value) - 4, 0) + value[-4:]
+
+
+def find_pii(text: str, detectors=None) -> list[tuple[str, int, int, str]]:
+    """(detector, start, end, value) for each hit, first detector wins on overlaps."""
+    hits: list[tuple[str, int, int, str]] = []
+    for name, (pattern, validator, group) in DETECTORS.items():
+        if detectors is not None and name not in detectors:
+            continue
+        for match in pattern.finditer(text):
+            start, end = match.span(group)
+            value = match.group(group)
+            if any(start < h_end and h_start < end for _, h_start, h_end, _ in hits):
+                continue
+            if validator and not validator(value):
+                continue
+            hits.append((name, start, end, value))
+    return hits
+
+
+def redact(text: str) -> str:
+    """Mask anything any detector recognises. Used on every finding before it leaves the engine."""
+    for name, start, end, value in sorted(find_pii(text), key=lambda h: h[1], reverse=True):
+        text = text[:start] + mask(name, value) + text[end:]
+    return text
 
 
 @register
@@ -60,22 +94,10 @@ class PiiLeak(BaseCheck):
         unknown = sorted(set(enabled) - set(DETECTORS))
         if unknown:
             raise PolicyError(f"pii_leak: unknown detector(s) {', '.join(unknown)}")
-
-        findings, taken = [], []
-        for name in DETECTORS:  # fixed order so overlaps resolve the same way every run
-            if name not in enabled:
-                continue
-            pattern, validator, group = DETECTORS[name]
-            for match in pattern.finditer(ctx.case.answer):
-                start, end = match.span(group)
-                value = match.group(group).strip()
-                if any(start < t_end and t_start < end for t_start, t_end in taken):
-                    continue
-                if validator and not validator(value):
-                    continue
-                taken.append((start, end))
-                findings.append(ctx.finding(
-                    f"Possible {name.replace('_', ' ')} in answer",
-                    evidence={"detector": name, "masked": mask(name, value)},
-                ))
-        return findings
+        return [
+            ctx.finding(
+                f"Possible {LABELS[name]} in answer",
+                evidence={"detector": name, "masked": mask(name, value)},
+            )
+            for name, _, _, value in find_pii(ctx.case.answer, enabled)
+        ]

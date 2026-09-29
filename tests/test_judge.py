@@ -3,7 +3,13 @@ from types import SimpleNamespace
 import pytest
 
 from attestor.errors import JudgeError
-from attestor.judge import DEFAULT_JUDGE_MODEL, AnthropicJudge, JudgeVerdict, _Assessment, make_judge
+from attestor.judge import (
+    DEFAULT_JUDGE_MODEL,
+    AnthropicJudge,
+    JudgeVerdict,
+    _Assessment,
+    make_judge,
+)
 from attestor.models import Source
 
 

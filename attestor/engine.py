@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from attestor._version import __version__
 from attestor.checks import CheckContext, all_checks
+from attestor.checks.pii_leak import redact
 from attestor.claims import extract_claims
 from attestor.judge import Judge
 from attestor.models import SEVERITY_RANK, Case, Finding, Report, Severity, Verdict
@@ -17,6 +18,23 @@ def verdict_for(findings: list[Finding]) -> Verdict:
     if Severity.WARN in severities:
         return Verdict.WARN
     return Verdict.PASS
+
+
+def _redact_value(value):
+    if isinstance(value, str):
+        return redact(value)
+    if isinstance(value, list):
+        return [_redact_value(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _redact_value(v) for k, v in value.items()}
+    return value
+
+
+def _redacted(finding: Finding) -> Finding:
+    return finding.model_copy(update={
+        "message": redact(finding.message),
+        "evidence": _redact_value(finding.evidence),
+    })
 
 
 def check_case(
@@ -46,7 +64,7 @@ def check_case(
             judge=judge,
             judge_calls=judge_calls,
         )
-        findings.extend(check_cls().run(ctx))
+        findings.extend(_redacted(f) for f in check_cls().run(ctx))
         ran.append(check_id)
 
     findings.sort(key=lambda f: (-SEVERITY_RANK[f.severity], f.claim_index or 0, f.check_id))

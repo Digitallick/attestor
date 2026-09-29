@@ -61,3 +61,11 @@ def test_verdict_for():
     assert verdict_for([]) is Verdict.PASS
     assert verdict_for([info]) is Verdict.PASS
     assert verdict_for([info, warn]) is Verdict.WARN
+
+
+def test_findings_never_echo_pii_even_with_pii_check_off():
+    policy = policy_from_dict({"checks": {"pii_leak": {"enabled": False}}})
+    report = check_case(load_case(CASES / "bad_memo.json"), policy)
+    dumped = report.model_dump_json()
+    assert "123-45-6789" not in dumped
+    assert "jane.doe@northwind-capital.com" not in dumped

@@ -93,3 +93,10 @@ def test_extra_terms():
     findings = run_check("prohibited_language", make_case("It's a no-brainer."),
                          options={"terms": TERMS, "extra_terms": ["no-brainer"]})
     assert len(findings) == 1
+
+
+def test_redact_masks_every_detector():
+    from attestor.checks.pii_leak import redact
+
+    text = "SSN 123-45-6789, mail jane.doe@example.com, call (604) 555-0199."
+    assert redact(text) == "SSN *******6789, mail j***@example.com, call **********0199."

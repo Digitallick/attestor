@@ -5,15 +5,14 @@ from __future__ import annotations
 import re
 from difflib import SequenceMatcher
 
-STOPWORDS = frozenset(
-    """
+_STOPWORDS = """
     a about above across after all also an and any are as at be been before being between both
     but by can could did do does during each for from had has have he her his how i if in into
     is it its just more most no nor not of on only or other our out over per s same she should
     so such than that the their them then there these they this those through to under up very
     was we were what when where which while who whom will with would you
-    """.split()
-)
+"""
+STOPWORDS = frozenset(_STOPWORDS.split())
 
 _PUNCT = str.maketrans({
     "‘": "'", "’": "'", "“": '"', "”": '"',

@@ -32,7 +32,8 @@ def test_token_recall():
 
 
 def test_ngram_overlap():
-    assert ngram_overlap("term loan matures march 2029", "The term loan matures in March 2029.") == 1.0
+    source = "The term loan matures in March 2029."
+    assert ngram_overlap("term loan matures march 2029", source) == 1.0
 
 
 def test_longest_match_ratio():
