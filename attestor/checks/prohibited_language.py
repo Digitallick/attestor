@@ -7,9 +7,15 @@ from attestor.errors import PolicyError
 from attestor.models import Finding, Severity
 from attestor.text import clean
 
-# "No investment is risk-free" should not trip the "risk-free" rule.
-_NEGATION = re.compile(r"\b(?:no|not|never|isn't|aren't|cannot|can't|nothing|without)\b[^.]*$",
+_NEGATION = re.compile(r"\b(?:no|not|never|none|nothing|without|isn't|aren't|cannot|can't)\b",
                        re.IGNORECASE)
+_CLAUSE_BREAK = re.compile(r"[,;:]|\b(?:and|but|while|whereas|although|though)\b", re.IGNORECASE)
+
+
+def _negated(before: str) -> bool:
+    """True for "no investment is risk-free", false for "no fees and guaranteed returns"."""
+    clause = _CLAUSE_BREAK.split(before)[-1]
+    return bool(_NEGATION.search(" ".join(clause.split()[-3:])))
 
 
 @register
@@ -19,7 +25,7 @@ class ProhibitedLanguage(BaseCheck):
     default_severity = Severity.BLOCK
 
     def run(self, ctx: CheckContext) -> list[Finding]:
-        terms = [*ctx.options.get("terms", []), *ctx.options.get("extra_terms", [])]
+        terms = [*ctx.items("terms"), *ctx.items("extra_terms")]
         try:
             patterns = [re.compile(rf"(?<!\w)(?:{t})(?!\w)", re.IGNORECASE) for t in terms]
         except re.error as exc:
@@ -30,7 +36,7 @@ class ProhibitedLanguage(BaseCheck):
             text = clean(claim.text)
             for pattern in patterns:
                 for match in pattern.finditer(text):
-                    if _NEGATION.search(text[max(0, match.start() - 40) : match.start()]):
+                    if _negated(text[: match.start()]):
                         continue
                     findings.append(ctx.finding(
                         f'Prohibited wording: "{match.group(0)}"',
