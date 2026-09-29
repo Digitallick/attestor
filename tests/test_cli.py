@@ -94,3 +94,11 @@ def test_list_commands():
     for check_id in ("citation_grounding", "pii_leak", "prohibited_language"):
         assert check_id in out
     assert "finance" in run("list-packs").output
+
+
+def test_bad_option_value_exit_3(in_tmp):
+    policy = in_tmp / "p.yaml"
+    policy.write_text("checks:\n  citation_grounding:\n    support_threshold: high\n")
+    result = run("check", CASES / "good_memo.json", "-p", policy, "--no-audit")
+    assert result.exit_code == 3
+    assert "support_threshold" in result.output

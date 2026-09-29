@@ -63,9 +63,12 @@ def append_record(path: str | Path, report: Report) -> dict[str, Any]:
     }
     record["hash"] = _digest(record)
 
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(record, sort_keys=True) + "\n")
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, sort_keys=True) + "\n")
+    except OSError as exc:
+        raise AuditError(f"{path}: cannot write audit log ({exc.strerror or exc})") from exc
     return record
 
 
@@ -80,6 +83,8 @@ def verify_chain(path: str | Path) -> ChainStatus:
             record = json.loads(line)
         except json.JSONDecodeError:
             return ChainStatus(False, count - 1, count, "record is not valid JSON")
+        if not isinstance(record, dict):
+            return ChainStatus(False, count - 1, count, "record is not a JSON object")
         claimed = record.pop("hash", None)
         if record.get("seq") != count:
             return ChainStatus(False, count - 1, count,

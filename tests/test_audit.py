@@ -65,3 +65,17 @@ def test_blank_lines_ignored(tmp_path, report):
 def test_missing_log(tmp_path):
     with pytest.raises(AuditError):
         verify_chain(tmp_path / "none.jsonl")
+
+
+def test_unwritable_path_is_audit_error(tmp_path, report):
+    blocker = tmp_path / "file.txt"
+    blocker.write_text("x")
+    with pytest.raises(AuditError):
+        append_record(blocker / "audit.jsonl", report)
+
+
+def test_non_object_line_reported_not_crashed(tmp_path):
+    path = tmp_path / "audit.jsonl"
+    path.write_text("[1]\n")
+    status = verify_chain(path)
+    assert not status.ok and status.broken_at == 1

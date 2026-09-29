@@ -31,7 +31,7 @@ class RequiredDisclosures(BaseCheck):
     def run(self, ctx: CheckContext) -> list[Finding]:
         answer = clean(ctx.case.answer)
         findings = []
-        for item in ctx.options.get("phrases", []):
+        for item in ctx.items("phrases", kinds=(str, dict)):
             label, pattern = _compile(item)
             if not pattern.search(answer):
                 findings.append(ctx.finding(

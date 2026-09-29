@@ -100,3 +100,33 @@ def test_redact_masks_every_detector():
 
     text = "SSN 123-45-6789, mail jane.doe@example.com, call (604) 555-0199."
     assert redact(text) == "SSN *******6789, mail j***@example.com, call **********0199."
+
+
+@pytest.mark.parametrize("answer", [
+    "No fees and guaranteed returns of 8%.",
+    "Unlike stocks that are not safe, this is risk-free.",
+    "It's not just safe, it's risk-free.",
+])
+def test_negation_elsewhere_in_sentence_does_not_hide_a_promise(answer):
+    assert len(run_check("prohibited_language", make_case(answer), options={"terms": TERMS})) == 1
+
+
+def test_negation_that_governs_the_term_still_suppresses():
+    case = make_case("There is no risk-free option. Nothing is risk-free.")
+    assert run_check("prohibited_language", case, options={"terms": TERMS}) == []
+
+
+@pytest.mark.parametrize("check_id,options", [
+    ("prohibited_language", {"terms": "risk-free"}),
+    ("prohibited_language", {"terms": [3]}),
+    ("required_disclosures", {"phrases": "not investment advice"}),
+    ("pii_leak", {"detectors": "ssn"}),
+])
+def test_scalar_where_list_expected_is_policy_error(check_id, options):
+    with pytest.raises(PolicyError, match="list"):
+        run_check(check_id, make_case("x"), options=options)
+
+
+def test_space_separated_figures_are_not_phone_numbers():
+    assert pii("Price targets of 150 250 3000 were discussed.") == []
+    assert pii("Call 604-555-0199 or 604.555.0199.") != []

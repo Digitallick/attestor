@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from attestor.errors import PolicyError
 from attestor.models import SEVERITY_RANK, Case, Claim, Finding, Severity
 
 if TYPE_CHECKING:
@@ -23,6 +24,20 @@ class CheckContext:
     refs: list[str]
     judge: Judge | None = None
     judge_calls: list[dict[str, Any]] = field(default_factory=list)
+
+    def number(self, key: str, default: float, *, low: float = 0.0, high: float = 1.0) -> float:
+        value = self.options.get(key, default)
+        is_number = isinstance(value, (int, float)) and not isinstance(value, bool)
+        if not is_number or not low <= value <= high:
+            raise PolicyError(f"{self.check_id}.{key} must be a number from {low} to {high}")
+        return float(value)
+
+    def items(self, key: str, default: list | None = None, kinds: tuple = (str,)) -> list:
+        value = self.options.get(key, [] if default is None else default)
+        if not isinstance(value, list) or not all(isinstance(v, kinds) for v in value):
+            names = " or ".join(k.__name__ for k in kinds)
+            raise PolicyError(f"{self.check_id}.{key} must be a list of {names}")
+        return value
 
     def finding(
         self,

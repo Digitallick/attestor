@@ -38,7 +38,9 @@ DETECTORS = {
         1,
     ),
     "email": (re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"), None, 0),
-    "phone": (re.compile(r"(?<!\d)(?:\+?1[ .-]?)?\(?\d{3}\)?[ .-]?\d{3}[ .-]\d{4}(?!\d)"), None, 0),
+    "phone": (
+        re.compile(r"(?<!\d)(?:\+?1[ .-]?)?(?:\(\d{3}\) ?|\d{3}[.-])\d{3}[.-]\d{4}(?!\d)"), None, 0
+    ),
 }
 
 
@@ -90,7 +92,7 @@ class PiiLeak(BaseCheck):
     default_severity = Severity.BLOCK
 
     def run(self, ctx: CheckContext) -> list[Finding]:
-        enabled = ctx.options.get("detectors", list(DETECTORS))
+        enabled = ctx.items("detectors", default=list(DETECTORS))
         unknown = sorted(set(enabled) - set(DETECTORS))
         if unknown:
             raise PolicyError(f"pii_leak: unknown detector(s) {', '.join(unknown)}")
