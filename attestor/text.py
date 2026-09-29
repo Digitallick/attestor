@@ -15,8 +15,8 @@ _STOPWORDS = """
 STOPWORDS = frozenset(_STOPWORDS.split())
 
 _PUNCT = str.maketrans({
-    "‘": "'", "’": "'", "“": '"', "”": '"',
-    "–": "-", "—": "-", " ": " ",
+    "\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"',
+    "\u2013": "-", "\u2014": "-", "\u00a0": " ",
 })
 _THOUSANDS = re.compile(r"(?<=\d),(?=\d{3}\b)")
 _TOKEN = re.compile(r"[a-z0-9]+(?:\.\d+)*[a-z%]*")

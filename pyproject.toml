@@ -31,7 +31,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-judge = ["anthropic>=0.70"]
+judge = ["anthropic>=1.9"]
 dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6"]
 
 [project.scripts]
