@@ -138,3 +138,16 @@ def test_bad_option_types_are_policy_errors(check_id, options):
     with pytest.raises(PolicyError):
         run_check(check_id, make_case("Revenue grew 8% [S1].", {"S1": "Revenue grew 8%."}),
                   options=options)
+
+
+@pytest.mark.parametrize("claim,source", [
+    ("Spreads widened 0.5% [S1].", "Spreads widened 50 bps."),
+    ("Leverage is 12.5x EBITDA [S1].", "Leverage is 12.5 times EBITDA."),
+    ("Sales in H1 2025 rose [S1].", "Sales in 1H25 rose."),
+    ("Sales in Q2 2024 rose [S1].", "Sales in 2Q24 rose."),
+    ("The deck is at https://example.com/deck/2024/10 [S1].", "The deck is online."),
+    ("The quarter closed on 3/31/2025 [S1].", "The quarter closed on March 31, 2025."),
+])
+def test_common_financial_notation_is_not_flagged(claim, source):
+    findings = run_check("citation_grounding", make_case(claim, {"S1": source}))
+    assert not any("missing_figures" in f.evidence for f in findings)

@@ -10,7 +10,7 @@ For each sentence with at least one valid citation, attestor scores it against e
 - 3-gram overlap on content words
 - longest shared character span, as a share of the sentence length
 
-Before scoring, every figure in the sentence must appear in at least one cited source. Figures are normalised to a value and a unit: currency, `%` (also "percent"), `x` multiples and `bps`, with scale words applied (`$4.2 million` is 4,200,000). A bare number in the source can support a currency amount in the sentence. Period labels (`FY2025`, `CY24`, `Q3`, `H1 2025`) are compared as labels, and a source that says `FY2024` also supports a sentence that says `2024`. Ordinals like `3rd` are ignored.
+Before scoring, every figure in the sentence must appear in at least one cited source. Figures are normalised to a value and a unit: currency, `%` (also "percent", and `bps` converted to percent), `x` multiples (also "times"), with scale words applied (`$4.2 million` is 4,200,000). Numbers inside URLs are ignored, and numeric dates like `3/31/2025` are checked by their year. A bare number in the source can support a currency amount in the sentence. Period labels (`FY2025`, `CY24`, `Q3`, `H1 2025`, `2Q24`, `1H25`) are compared as labels, and a source that says `FY2024` also supports a sentence that says `2024`. Ordinals like `3rd` are ignored.
 
 | Option | Default | Meaning |
 |---|---|---|
