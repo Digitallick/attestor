@@ -102,3 +102,20 @@ def test_bad_option_value_exit_3(in_tmp):
     result = run("check", CASES / "good_memo.json", "-p", policy, "--no-audit")
     assert result.exit_code == 3
     assert "support_threshold" in result.output
+
+
+def test_error_text_with_brackets_is_printed_verbatim(in_tmp):
+    bad = in_tmp / "memo[judge].json"
+    bad.write_text("{")
+    result = run("check", bad)
+    assert result.exit_code == 3
+    assert "memo[judge].json" in result.output
+
+
+def test_readme_case_example_passes(in_tmp):
+    import re
+
+    readme = (CASES.parent.parent / "README.md").read_text()
+    example = re.search(r"```json\n(.*?)```", readme, re.S).group(1)
+    (in_tmp / "memo.json").write_text(example)
+    assert run("check", in_tmp / "memo.json", "--no-audit", "--strict").exit_code == 0

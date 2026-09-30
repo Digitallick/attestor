@@ -6,6 +6,7 @@ from typing import Annotated, NoReturn
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
 
 from attestor.audit import append_record, verify_chain
@@ -31,7 +32,7 @@ _VERDICT_RANK = {Verdict.PASS: 0, Verdict.WARN: 1, Verdict.BLOCK: 2}
 
 
 def _fail(message: str) -> NoReturn:
-    err_console.print(f"[red]error:[/red] {message}", highlight=False, soft_wrap=True)
+    err_console.print(f"[red]error:[/red] {escape(message)}", highlight=False, soft_wrap=True)
     raise typer.Exit(3)
 
 
@@ -137,5 +138,5 @@ def init(
     except AttestorError as exc:
         _fail(str(exc))
     path.write_text(text, encoding="utf-8")
-    console.print(f"wrote {path} from the {pack} pack")
+    console.print(f"wrote {escape(str(path))} from the {escape(pack)} pack")
 

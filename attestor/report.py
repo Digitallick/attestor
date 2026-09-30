@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from rich import box
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
 from rich.text import Text
 
@@ -31,16 +32,16 @@ def render(report: Report, console: Console) -> None:
     table.add_column("Finding", ratio=3)
     table.add_column("Rule", style="dim", ratio=2)
     for f in report.findings:
-        detail = f.message
+        detail = escape(f.message)
         if passage := f.evidence.get("closest_passage"):
-            detail += f'\n[dim]source: "{passage}"[/dim]'
+            detail += f'\n[dim]source: "{escape(passage)}"[/dim]'
         elif masked := f.evidence.get("masked"):
-            detail += f" [dim]({masked})[/dim]"
+            detail += f" [dim]({escape(masked)})[/dim]"
         table.add_row(
             Text(f.severity.value.upper(), style=SEVERITY_STYLE[f.severity]),
             f.check_id,
             str(f.claim_index or "-"),
             detail,
-            "\n".join(f.regulatory_refs),
+            escape("\n".join(f.regulatory_refs)),
         )
     console.print(table)

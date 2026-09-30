@@ -40,7 +40,7 @@ A case is the model's answer plus the sources it was given. Citations are inline
 ```json
 {
   "id": "memo-042",
-  "answer": "FY2025 revenue was $412.6 million [S1]. This is not investment advice.",
+  "answer": "FY2025 revenue was $412.6 million [S1]. Not investment advice. Past performance is not indicative of future results.",
   "sources": [{ "id": "S1", "text": "FY2025 revenue was $412.6 million, up 8.4%." }],
   "metadata": { "model": "your-model", "prompt_id": "ic-memo-v3" }
 }
